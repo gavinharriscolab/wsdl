@@ -110,6 +110,10 @@ WSDL.load = function load(url, done) {
   var wsdl = new WSDL();
 
   return wsdl.load(url, function(err) {
-    return done(err, wsdl);
+    if (err) {
+      return done(err);
+    }
+
+    return done(null, wsdl);
   });
 };
