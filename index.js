@@ -4,7 +4,7 @@ var request = require("./request"),
 var parser = new xmldom.DOMParser(),
     serialiser = new xmldom.XMLSerializer();
 
-var WSDL = function WSDL(options) {
+var WSDL = module.exports = function WSDL(options) {
   this.bindingHandlers = [];
   this.operationHandlers = [];
 
