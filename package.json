@@ -1,0 +1,26 @@
+{
+  "name": "wsdl",
+  "version": "0.0.0",
+  "description": "Work with WSDL! Yay!",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha -R tap"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/deoxxa/wsdl.git"
+  },
+  "keywords": [
+    "wsdl",
+    "xml"
+  ],
+  "author": "Conrad Pankoff <deoxxa@fknsrs.biz> (http://www.fknsrs.biz/)",
+  "license": "BSD",
+  "bugs": {
+    "url": "https://github.com/deoxxa/wsdl/issues"
+  },
+  "devDependencies": {
+    "chai": "~1.7.2",
+    "mocha": "~1.13.0"
+  }
+}
