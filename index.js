@@ -5,10 +5,35 @@ var parser = new xmldom.DOMParser(),
     serialiser = new xmldom.XMLSerializer();
 
 var WSDL = module.exports = function WSDL(options) {
+  this.portTypeHandlers = [];
   this.bindingHandlers = [];
   this.operationHandlers = [];
 
+  this.portTypes = [];
   this.bindings = [];
+};
+
+WSDL.prototype.portTypeFromXML = function portTypeFromXML(element) {
+  var name = element.getAttribute("name");
+
+  var portType = {
+    name: name,
+    operations: [],
+  };
+
+  var i;
+
+  for (i=0;i<this.portTypeHandlers.length;++i) {
+    this.portTypeHandlers[i].call(null, portType, element);
+  }
+
+  var operations = element.getElementsByTagNameNS("http://schemas.xmlsoap.org/wsdl/", "operation");
+
+  for (i=0;i<operations.length;++i) {
+    portType.operations.push(this.operationFromXML(operations[i]));
+  }
+
+  return portType;
 };
 
 WSDL.prototype.bindingFromXML = function bindingFromXML(element) {
@@ -97,6 +122,12 @@ WSDL.prototype.load = function load(url, done) {
     definition = definition[0];
 
     var i;
+
+    var portTypes = definition.getElementsByTagNameNS("http://schemas.xmlsoap.org/wsdl/", "portType");
+
+    for (i=0;i<portTypes.length;++i) {
+      self.portTypes.push(self.portTypeFromXML(portTypes[i]));
+    }
 
     var bindings = definition.getElementsByTagNameNS("http://schemas.xmlsoap.org/wsdl/", "binding");
 
