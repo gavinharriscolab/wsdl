@@ -53,16 +53,20 @@ WSDL.prototype.operationFromXML = function operationFromXML(element) {
 
   var input = element.getElementsByTagNameNS("http://schemas.xmlsoap.org/wsdl/", "input");
   if (input && input.length) {
-    operation.input = {
-      name: input[0].getAttribute("name"),
-    };
+    operation.input = {};
+
+    if (input[0].hasAttribute("name")) {
+      operation.input.name = input[0].getAttribute("name");
+    }
   }
 
   var output = element.getElementsByTagNameNS("http://schemas.xmlsoap.org/wsdl/", "output");
   if (output && output.length) {
-    operation.output = {
-      name: output[0].getAttribute("name"),
-    };
+    operation.output = {};
+
+    if (output[0].hasAttribute("name")) {
+      operation.output.name = output[0].getAttribute("name");
+    }
   }
 
   for (var i=0;i<this.operationHandlers.length;++i) {
