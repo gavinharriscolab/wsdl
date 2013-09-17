@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 var request = require("./request"),
     xmldom = require("xmldom");
 
