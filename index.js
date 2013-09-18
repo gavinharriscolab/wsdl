@@ -5,12 +5,15 @@ var parser = new xmldom.DOMParser(),
     serialiser = new xmldom.XMLSerializer();
 
 var WSDL = module.exports = function WSDL(options) {
+  this.messageHandlers = [];
+  this.partHandlers = [];
   this.portTypeHandlers = [];
   this.bindingHandlers = [];
   this.operationHandlers = [];
   this.serviceHandlers = [];
   this.portHandlers = [];
 
+  this.messages = [];
   this.portTypes = [];
   this.bindings = [];
   this.services = [];
@@ -18,6 +21,53 @@ var WSDL = module.exports = function WSDL(options) {
   this.state = {
     targetNamespace: [],
   };
+};
+
+WSDL.prototype.messageFromXML = function messageFromXML(element) {
+  var name = element.getAttribute("name");
+
+  var message = {
+    name: [this.state.targetNamespace[0], name],
+    parts: [],
+  };
+
+  var i;
+
+  for (i=0;i<this.messageHandlers.length;++i) {
+    this.messageHandlers[i].call(null, message, element);
+  }
+
+  var parts = element.getElementsByTagNameNS("http://schemas.xmlsoap.org/wsdl/", "part");
+
+  for (i=0;i<parts.length;++i) {
+    message.parts.push(this.partFromXML(parts[i]));
+  }
+
+  return message;
+};
+
+WSDL.prototype.partFromXML = function partFromXML(element) {
+  var name = element.getAttribute("name"),
+      elementName = element.getAttribute("element");
+
+  elementName = elementName.split(":");
+
+  if (elementName.length > 1) {
+    elementName[0] = element.lookupNamespaceURI(elementName[0]);
+  } else {
+    elementName.unshift(null);
+  }
+
+  var part = {
+    name: name,
+    element: elementName,
+  };
+
+  for (var i=0;i<this.partHandlers.length;++i) {
+    this.partHandlers.call(null, part, element);
+  }
+
+  return part;
 };
 
 WSDL.prototype.portTypeFromXML = function portTypeFromXML(element) {
@@ -180,6 +230,12 @@ WSDL.prototype.load = function load(url, done) {
     self.state.targetNamespace.push(targetNamespace);
 
     var i;
+
+    var messages = definition.getElementsByTagNameNS("http://schemas.xmlsoap.org/wsdl/", "message");
+
+    for (i=0;i<messages.length;++i) {
+      self.messages.push(self.messageFromXML(messages[i]));
+    }
 
     var portTypes = definition.getElementsByTagNameNS("http://schemas.xmlsoap.org/wsdl/", "portType");
 
