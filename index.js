@@ -14,13 +14,17 @@ var WSDL = module.exports = function WSDL(options) {
   this.portTypes = [];
   this.bindings = [];
   this.services = [];
+
+  this.state = {
+    targetNamespace: [],
+  };
 };
 
 WSDL.prototype.portTypeFromXML = function portTypeFromXML(element) {
   var name = element.getAttribute("name");
 
   var portType = {
-    name: name,
+    name: [this.state.targetNamespace[0], name],
     operations: [],
   };
 
@@ -54,7 +58,7 @@ WSDL.prototype.bindingFromXML = function bindingFromXML(element) {
   var i;
 
   var binding = {
-    name: name,
+    name: [this.state.targetNamespace[0], name],
     type: typeName,
     operations: [],
   };
@@ -108,7 +112,7 @@ WSDL.prototype.serviceFromXML = function serviceFromXML(element) {
   var name = element.getAttribute("name");
 
   var service = {
-    name: name,
+    name: [this.state.targetNamespace[0], name],
     ports: [],
   };
 
@@ -171,6 +175,10 @@ WSDL.prototype.load = function load(url, done) {
     }
     definition = definition[0];
 
+    var targetNamespace = definition.getAttribute("targetNamespace");
+
+    self.state.targetNamespace.push(targetNamespace);
+
     var i;
 
     var portTypes = definition.getElementsByTagNameNS("http://schemas.xmlsoap.org/wsdl/", "portType");
@@ -190,6 +198,8 @@ WSDL.prototype.load = function load(url, done) {
     for (i=0;i<services.length;++i) {
       self.services.push(self.serviceFromXML(services[i]));
     }
+
+    self.state.targetNamespace.pop();
 
     return done();
   });
