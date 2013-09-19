@@ -5,6 +5,8 @@ var parser = new xmldom.DOMParser(),
     serialiser = new xmldom.XMLSerializer();
 
 var WSDL = module.exports = function WSDL(options) {
+  options = options || {};
+
   this.messageHandlers = [];
   this.partHandlers = [];
   this.portTypeHandlers = [];
@@ -12,6 +14,34 @@ var WSDL = module.exports = function WSDL(options) {
   this.operationHandlers = [];
   this.serviceHandlers = [];
   this.portHandlers = [];
+
+  if (options.messageHandlers) {
+    this.messageHandlers = this.messageHandlers.concat(options.messageHandlers);
+  }
+
+  if (options.partHandlers) {
+    this.partHandlers = this.partHandlers.concat(options.partHandlers);
+  }
+
+  if (options.portTypeHandlers) {
+    this.portTypeHandlers = this.portTypeHandlers.concat(options.portTypeHandlers);
+  }
+
+  if (options.bindingHandlers) {
+    this.bindingHandlers = this.bindingHandlers.concat(options.bindingHandlers);
+  }
+
+  if (options.operationHandlers) {
+    this.operationHandlers = this.operationHandlers.concat(options.operationHandlers);
+  }
+
+  if (options.serviceHandlers) {
+    this.serviceHandlers = this.serviceHandlers.concat(options.serviceHandlers);
+  }
+
+  if (options.portHandlers) {
+    this.portHandlers = this.portHandlers.concat(options.portHandlers);
+  }
 
   this.messages = [];
   this.portTypes = [];
@@ -21,6 +51,34 @@ var WSDL = module.exports = function WSDL(options) {
   this.state = {
     targetNamespace: [],
   };
+};
+
+WSDL.prototype.addMessageHandler = function addMessageHandler(messageHandler) {
+  this.messageHandlers.push(messageHandler);
+};
+
+WSDL.prototype.addPartHandler = function addPartHandler(partHandler) {
+  this.partHandlers.push(partHandler);
+};
+
+WSDL.prototype.addPortTypeHandler = function addPortTypeHandler(portTypeHandler) {
+  this.portTypeHandlers.push(portTypeHandler);
+};
+
+WSDL.prototype.addBindingHandler = function addBindingHandler(bindingHandler) {
+  this.bindingHandlers.push(bindingHandler);
+};
+
+WSDL.prototype.addOperationHandler = function addOperationHandler(operationHandler) {
+  this.operationHandlers.push(operationHandler);
+};
+
+WSDL.prototype.addServiceHandler = function addServiceHandler(serviceHandler) {
+  this.serviceHandlers.push(serviceHandler);
+};
+
+WSDL.prototype.addPortHandler = function addPortHandler(portHandler) {
+  this.portHandlers.push(portHandler);
 };
 
 WSDL.prototype.messageFromXML = function messageFromXML(element) {
@@ -261,8 +319,18 @@ WSDL.prototype.load = function load(url, done) {
   });
 };
 
-WSDL.load = function load(url, done) {
-  var wsdl = new WSDL();
+WSDL.load = function load(options, url, done) {
+  if (typeof url === "function") {
+    done = url;
+    url = null;
+  }
+
+  if (typeof options === "string") {
+    url = options;
+    options = null;
+  }
+
+  var wsdl = new WSDL(options);
 
   return wsdl.load(url, function(err) {
     if (err) {
