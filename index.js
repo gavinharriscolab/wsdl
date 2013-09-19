@@ -122,7 +122,7 @@ WSDL.prototype.partFromXML = function partFromXML(element) {
   };
 
   for (var i=0;i<this.partHandlers.length;++i) {
-    this.partHandlers.call(null, part, element);
+    this.partHandlers[i].call(null, part, element);
   }
 
   return part;
@@ -210,7 +210,7 @@ WSDL.prototype.operationFromXML = function operationFromXML(element) {
   }
 
   for (var i=0;i<this.operationHandlers.length;++i) {
-    this.operationHandlers.call(null, operation, element);
+    this.operationHandlers[i].call(null, operation, element);
   }
 
   return operation;
@@ -257,7 +257,7 @@ WSDL.prototype.portFromXML = function portFromXML(element) {
   };
 
   for (var i=0;i<this.portHandlers.length;++i) {
-    this.portHandlers.call(null, port, element);
+    this.portHandlers[i].call(null, port, element);
   }
 
   return port;
