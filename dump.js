@@ -7,9 +7,11 @@ var options = {
     var soapBindings = element.getElementsByTagNameNS("http://schemas.xmlsoap.org/wsdl/soap/", "binding");
 
     if (soapBindings.length === 1) {
-      binding.soapBinding = {
-        style: soapBindings[0].getAttribute("style"),
-        transport: soapBindings[0].getAttribute("transport"),
+      binding.soap = {
+        binding: {
+          style: soapBindings[0].getAttribute("style"),
+          transport: soapBindings[0].getAttribute("transport"),
+        },
       };
     }
   }],
