@@ -204,6 +204,20 @@ WSDL.prototype.operationFromXML = function operationFromXML(element) {
     if (input[0].hasAttribute("name")) {
       operation.input.name = input[0].getAttribute("name");
     }
+
+    if (input[0].hasAttribute("message")) {
+      var typeName = input[0].getAttribute("message");
+
+      typeName = typeName.split(":");
+
+      if (typeName.length > 1) {
+        typeName[0] = input[0].lookupNamespaceURI(typeName[0]);
+      } else {
+        typeName.unshift(null);
+      }
+
+      operation.input.message = typeName;
+    }
   }
 
   var output = element.getElementsByTagNameNS("http://schemas.xmlsoap.org/wsdl/", "output");
@@ -212,6 +226,43 @@ WSDL.prototype.operationFromXML = function operationFromXML(element) {
 
     if (output[0].hasAttribute("name")) {
       operation.output.name = output[0].getAttribute("name");
+    }
+
+    if (output[0].hasAttribute("message")) {
+      var typeName = output[0].getAttribute("message");
+
+      typeName = typeName.split(":");
+
+      if (typeName.length > 1) {
+        typeName[0] = output[0].lookupNamespaceURI(typeName[0]);
+      } else {
+        typeName.unshift(null);
+      }
+
+      operation.output.message = typeName;
+    }
+  }
+
+  var fault = element.getElementsByTagNameNS("http://schemas.xmlsoap.org/wsdl/", "fault");
+  if (fault && fault.length) {
+    operation.fault = {};
+
+    if (fault[0].hasAttribute("name")) {
+      operation.fault.name = fault[0].getAttribute("name");
+    }
+
+    if (fault[0].hasAttribute("message")) {
+      var typeName = element.getAttribute("message");
+
+      typeName = typeName.split(":");
+
+      if (typeName.length > 1) {
+        typeName[0] = element.lookupNamespaceURI(typeName[0]);
+      } else {
+        typeName.unshift(null);
+      }
+
+      operation.fault.message = typeName;
     }
   }
 
