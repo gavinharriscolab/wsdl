@@ -1,6 +1,6 @@
 {
   "name": "wsdl",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Work with WSDL! Yay!",
   "main": "index.js",
   "scripts": {
