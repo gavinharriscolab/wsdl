@@ -376,6 +376,46 @@ WSDL.prototype.load = function load(url, done) {
   });
 };
 
+WSDL.prototype.getMessage = function getMessage(name) {
+  if (name.length === 1) {
+    name.unshift("");
+  }
+
+  return this.message.filter(function(e) {
+    return e.name[0] === name[0] && e.name[1] === name[1];
+  }).shift();
+};
+
+WSDL.prototype.getPortType = function getPortType(name) {
+  if (name.length === 1) {
+    name.unshift("");
+  }
+
+  return this.portTypes.filter(function(e) {
+    return e.name[0] === name[0] && e.name[1] === name[1];
+  }).shift();
+};
+
+WSDL.prototype.getBinding = function getBinding(name) {
+  if (name.length === 1) {
+    name.unshift("");
+  }
+
+  return this.bindings.filter(function(e) {
+    return e.name[0] === name[0] && e.name[1] === name[1];
+  }).shift();
+};
+
+WSDL.prototype.getService = function getService(name) {
+  if (name.length === 1) {
+    name.unshift("");
+  }
+
+  return this.services.filter(function(e) {
+    return e.name[0] === name[0] && e.name[1] === name[1];
+  }).shift();
+};
+
 WSDL.load = function load(options, url, done) {
   if (typeof url === "function") {
     done = url;
