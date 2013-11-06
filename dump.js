@@ -3,6 +3,17 @@
 var WSDL = require("./");
 
 var options = {
+  portHandlers: [function(port, element) {
+    var soapAddresses = element.getElementsByTagNameNS("http://schemas.xmlsoap.org/wsdl/soap/", "address");
+
+    if (soapAddresses.length === 1) {
+      port.soap = {
+        address: {
+          location: soapAddresses[0].getAttribute("location"),
+        },
+      };
+    }
+  }],
   bindingHandlers: [function(binding, element) {
     var soapBindings = element.getElementsByTagNameNS("http://schemas.xmlsoap.org/wsdl/soap/", "binding");
 
@@ -19,7 +30,7 @@ var options = {
     var soapOperations = element.getElementsByTagNameNS("http://schemas.xmlsoap.org/wsdl/soap/", "operation");
 
     if (soapOperations.length === 1) {
-      operation.soapOperations = {
+      operation.soapOperation = {
         soapAction: soapOperations[0].getAttribute("soapAction"),
       };
     }
@@ -87,5 +98,40 @@ WSDL.load(options, process.argv[2], function(err, wsdl) {
     return console.warn(err);
   }
 
-  console.log(JSON.stringify(wsdl, null, 2));
+  var a = {};
+
+  wsdl.services.forEach(function(service) {
+    service.ports.forEach(function(port) {
+      if (!port || !port.soap || !port.soap.address || !port.soap.address.location) {
+        return;
+      }
+
+      var binding = wsdl.bindings.filter(function(binding) {
+        return binding.name[0] === port.binding[0] && binding.name[1] === port.binding[1];
+      }).shift();
+
+      if (!binding) {
+        return;
+      }
+
+      binding.operations.forEach(function(operation) {
+        if (!operation || !operation.input || !operation.input.soap || !operation.input.soap.namespace) {
+          return;
+        }
+
+        if (!operation || !operation.soapOperation || !operation.soapOperation.soapAction) {
+          return;
+        }
+
+        a[operation.name] = {
+          uri: port.soap.address.location,
+          action: operation.soapOperation.soapAction,
+          request: [operation.input.soap.namespace, operation.input.name],
+          response: [operation.output.soap.namespace, operation.output.name],
+        };
+      });
+    });
+  });
+
+  console.log(JSON.stringify(a, null, 2));
 });
