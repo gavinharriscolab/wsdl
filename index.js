@@ -1,4 +1,4 @@
-var request = require("./request"),
+var request = require("request"),
     xmldom = require("xmldom");
 
 var parser = new xmldom.DOMParser(),
@@ -43,6 +43,10 @@ var WSDL = module.exports = function WSDL(options) {
     this.portHandlers = this.portHandlers.concat(options.portHandlers);
   }
 
+  if (options.request) {
+    this._request = options.request;
+  }
+
   this.messages = [];
   this.portTypes = [];
   this.bindings = [];
@@ -52,6 +56,8 @@ var WSDL = module.exports = function WSDL(options) {
     targetNamespace: [],
   };
 };
+
+WSDL.prototype._request = request;
 
 WSDL.prototype.addMessageHandler = function addMessageHandler(messageHandler) {
   this.messageHandlers.push(messageHandler);
@@ -266,7 +272,7 @@ WSDL.prototype.portFromXML = function portFromXML(element) {
 WSDL.prototype.load = function load(url, done) {
   var self = this;
 
-  request(url, function(err, data) {
+  this._request.call(null, url, function(err, res, data) {
     if (err) {
       return done(err);
     }
