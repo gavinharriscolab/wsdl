@@ -14,6 +14,7 @@ var WSDL = module.exports = function WSDL(options) {
   this.operationHandlers = [];
   this.serviceHandlers = [];
   this.portHandlers = [];
+  this.types = {};
 
   if (options.messageHandlers) {
     this.messageHandlers = this.messageHandlers.concat(options.messageHandlers);
@@ -370,11 +371,96 @@ WSDL.prototype.load = function load(url, done) {
       self.services.push(self.serviceFromXML(services[i]));
     }
 
+	var types = definition.getElementsByTagNameNS("http://schemas.xmlsoap.org/wsdl/", "types");
+
+    for (i=0;i<types.length;++i) {
+
+		var schemas = types[i].getElementsByTagName("schema");
+
+		if(schemas) {
+			for (var i = 0; i < schemas.length; i++) {
+				var schema = schemas[i];
+				var includes = schema.getElementsByTagName("include");
+				//Include Types:
+				if(includes) {
+					for (var p = 0; p < includes.length; p++) {
+						var include = includes[p];
+						console.log(schema.getAttribute("targetNamespace") + ": " + include.getAttribute("schemaLocation"));
+
+						getInclude(schema.getAttribute("targetNamespace"), include.getAttribute("schemaLocation"), (err, xsd) => {
+							if(err) {
+								console.log(err);
+							} else {
+								self.types[schema.getAttribute("targetNamespace")] = {
+									inputTypes: processXsd(xsd, "InputParameters"),
+									url: include.getAttribute("schemaLocation")
+								};
+							}
+						});
+
+					};
+				}
+			}
+		}
+
+    }
+
     self.state.targetNamespace.pop();
 
     return done();
   });
 };
+
+function processXsd(xsd, paramTypes) {
+	// Convert the XSD into something useful!
+	var doc = parser.parseFromString(xsd);
+
+	// InputParameters
+	var elements = doc.getElementsByTagName("element")
+	var output  = [];
+
+	for (var i = 0; i < elements.length; i++) {
+		var element = elements[i];
+		if(element.getAttribute("name") == paramTypes) {
+			var ct = element.getElementsByTagName("complexType");
+
+			if(ct.length > 0) {
+				var e = ct[0].getElementsByTagName("sequence")[0].getElementsByTagName("element"); // TODO: Error check!
+
+				for (var p = 0; p < e.length; p++) {
+					output.push( {
+						"name": e[p].getAttribute("name"),
+						"type": e[p].getAttribute("type")
+					} );
+				}
+			}
+		}
+	}
+
+	return output;
+}
+
+function getInclude(namespace, url, callback) {
+
+    var requestParams = {
+        url               : url,
+        headers           : {},
+        rejectUnauthorized: false
+    };
+
+	request(requestParams, (err, response, body) => {
+		if(err) {
+			callback(err);
+		} else {
+			callback(null, body);
+		}
+	})
+
+}
+
+function processComplexType(type) {
+
+}
 
 WSDL.prototype.getMessage = function getMessage(name) {
   if (name.length === 1) {
