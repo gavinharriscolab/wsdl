@@ -15,6 +15,7 @@ var WSDL = module.exports = function WSDL(options) {
   this.serviceHandlers = [];
   this.portHandlers = [];
   this.types = {};
+  this.operations = {};
 
   if (options.messageHandlers) {
     this.messageHandlers = this.messageHandlers.concat(options.messageHandlers);
@@ -359,6 +360,33 @@ WSDL.prototype.load = function load(url, done) {
       self.portTypes.push(self.portTypeFromXML(portTypes[i]));
     }
 
+	self.portTypes.forEach((pt) => {
+		pt.operations.forEach( (oper) => {
+			var s;
+			if(self.messages.some( (msg) => {
+				if(oper.input.message[0] == msg.name[0] && oper.input.message[1] == msg.name[1]) {
+					s = msg; return true;
+				}
+				return false;
+			})) {
+
+				s.parts.some((part) => {
+					if(part.name == 'body') {
+
+						self.operations[oper.name] = {
+							InputParameters: part.element[0]
+						}
+
+					}
+				})
+
+			};
+
+		});
+
+	});
+
+
     var bindings = definition.getElementsByTagNameNS("http://schemas.xmlsoap.org/wsdl/", "binding");
 
     for (i=0;i<bindings.length;++i) {
@@ -373,7 +401,7 @@ WSDL.prototype.load = function load(url, done) {
 
 	var types = definition.getElementsByTagNameNS("http://schemas.xmlsoap.org/wsdl/", "types");
 
-    for (i=0;i<types.length;++i) {
+	for (i=0;i<types.length;++i) {
 
 		var schemas = types[i].getElementsByTagName("schema");
 
@@ -387,16 +415,18 @@ WSDL.prototype.load = function load(url, done) {
 						var include = includes[p];
 						console.log(schema.getAttribute("targetNamespace") + ": " + include.getAttribute("schemaLocation"));
 
-						getInclude(schema.getAttribute("targetNamespace"), include.getAttribute("schemaLocation"), (err, xsd) => {
-							if(err) {
-								console.log(err);
-							} else {
-								self.types[schema.getAttribute("targetNamespace")] = {
-									inputTypes: processXsd(xsd, "InputParameters"),
-									url: include.getAttribute("schemaLocation")
-								};
+						getInclude(schema.getAttribute("targetNamespace"), include.getAttribute("schemaLocation"),
+							(err, xsd, namespace, url) => {
+								if(err) {
+									console.log(err);
+								} else {
+									self.types[namespace] = {
+										inputTypes: processXsd(xsd, "InputParameters"),
+										url: url
+									};
+								}
 							}
-						});
+						);
 
 					};
 				}
@@ -452,7 +482,7 @@ function getInclude(namespace, url, callback) {
 		if(err) {
 			callback(err);
 		} else {
-			callback(null, body);
+			callback(null, body, namespace, url);
 		}
 	})
 
@@ -501,6 +531,12 @@ WSDL.prototype.getService = function getService(name) {
     return e.name[0] === name[0] && e.name[1] === name[1];
   }).shift();
 };
+
+WSDL.prototype.getType = function getType(namespace) {
+	if(namespace.length === 1) {
+
+	}
+}
 
 WSDL.load = function load(options, url, done) {
   if (typeof url === "function") {
