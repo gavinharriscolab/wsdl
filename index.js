@@ -455,13 +455,16 @@ function processXsd(xsd, paramTypes) {
 			var ct = element.getElementsByTagName("complexType");
 
 			if(ct.length > 0) {
-				var e = ct[0].getElementsByTagName("sequence")[0].getElementsByTagName("element"); // TODO: Error check!
+				var seq = ct[0].getElementsByTagName("sequence");
+				if(seq.length > 0) {
+					var e = seq[0].getElementsByTagName("element"); // TODO: Error check!
 
-				for (var p = 0; p < e.length; p++) {
-					output.push( {
-						"name": e[p].getAttribute("name"),
-						"type": e[p].getAttribute("type")
-					} );
+					for (var p = 0; p < e.length; p++) {
+						output.push( {
+							"name": e[p].getAttribute("name"),
+							"type": e[p].getAttribute("type")
+						} );
+					}
 				}
 			}
 		}
