@@ -413,7 +413,6 @@ WSDL.prototype.load = function load(url, done) {
 				if(includes) {
 					for (var p = 0; p < includes.length; p++) {
 						var include = includes[p];
-						console.log(schema.getAttribute("targetNamespace") + ": " + include.getAttribute("schemaLocation"));
 
 						getInclude(schema.getAttribute("targetNamespace"), include.getAttribute("schemaLocation"),
 							(err, xsd, namespace, url) => {
